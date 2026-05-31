@@ -80,7 +80,11 @@ void GroupedSwitcherEffect::activateOverlay()
 void GroupedSwitcherEffect::onControllerClosed()
 {
     m_active = false;
-    setRunning(false);
+    // closed() is emitted from within a QML signal handler (a key press / click).
+    // Tearing down the scene synchronously would delete the QQuickItem whose
+    // handler is still running and crash KWin, so defer it to the next event loop tick.
+    QMetaObject::invokeMethod(
+        this, [this] { setRunning(false); }, Qt::QueuedConnection);
 }
 
 } // namespace gks
