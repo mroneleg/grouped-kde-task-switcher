@@ -12,44 +12,53 @@ and window count); drilling into a group reveals a uniform, scrollable grid of l
 thumbnails. The overlay stays open after the trigger keys are released and closes only on confirm
 or cancel.
 
-**Technical approach** (from research): implement it as a **C++ `QuickSceneEffect` KWin 6 plugin**
-(the same vehicle as KWin's built-in Overview / Window View effects), with a **QML overlay** for
-the declarative UI and theming. This is the only supported vehicle that (a) keeps the switcher open
-independent of modifier state — via `EffectsHandler::grabKeyboard()` — and (b) renders **live,
-compositor-backed thumbnails** that work identically on Wayland and X11. A stock TabBox switcher
-theme cannot do either (KWin core owns its lifecycle and closes it on modifier release). All
-behavioral logic — grouping, ordering, selection/cycling, and the open→overview→in-group state
-machine — lives in a **pure C++ core** behind a `WindowSource` abstraction, so it is unit-testable
-with fake windows and no running compositor (Constitution Principle III).
+> **Target retargeted to Plasma 5.27 / KWin 5.27 (2026-05-31)** — the development machine runs
+> Plasma 5.27 LTS (Ubuntu 24.04), not Plasma 6. The architecture is unchanged (the `QuickSceneEffect`
+> vehicle exists in KWin 5.27 too); the deltas are API/version specifics captured below and in
+> [research.md](./research.md) §"Retarget to Plasma 5.27".
 
-The implementation language is **C++ only** (Qt 6 / KF6): the effect shell *must* be C++ (moc-based
-`QuickSceneEffect` subclass + `KPluginFactory`), and keeping the whole stack C++ avoids an FFI
-boundary for logic that is not on a hot path. A Rust core via FFI was considered and rejected — see
-[research.md](./research.md) §"Language choice".
+**Technical approach** (from research): implement it as a **C++ `QuickSceneEffect` KWin 5.27 plugin**
+(declared in `libkwineffects/kwinquickeffect.h` — the same vehicle as KWin's built-in Overview
+effect), with a **QML overlay** for the declarative UI and theming. This is the only supported
+vehicle that (a) keeps the switcher open independent of modifier state — via
+`EffectsHandler::grabKeyboard()` + overriding `Effect::grabbedKeyboardEvent()` — and (b) renders
+**live, compositor-backed thumbnails** (`WindowThumbnailItem`) that work identically on Wayland and
+X11. A stock TabBox switcher theme cannot do either (KWin core owns its lifecycle and closes it on
+modifier release). All behavioral logic — grouping, ordering, selection/cycling, and the
+open→overview→in-group state machine — lives in a **pure C++ core** behind a `WindowSource`
+abstraction, so it is unit-testable with fake windows and no running compositor (Constitution
+Principle III).
+
+The implementation language is **C++ only** (Qt 5 / KF5): the effect shell *must* be C++ (moc-based
+`QuickSceneEffect` subclass + `KWIN_EFFECT_FACTORY` macro), and keeping the whole stack C++ avoids an
+FFI boundary for logic that is not on a hot path. A Rust core via FFI was considered and rejected —
+see [research.md](./research.md) §"Language choice".
 
 ## Technical Context
 
-**Language/Version**: C++20 (minimum; match the installed KWin's standard when linking its effect
-headers — KWin `master` uses C++23, stable Plasma 6.x branches are lower). QML (Qt Quick) for the
-overlay UI only.
+**Language/Version**: C++20 (KWin 5.27 sets `CMAKE_CXX_STANDARD 20`; Qt ≥ 5.15.2, KF5 ≥ 5.102). QML
+(Qt Quick) for the overlay UI only.
 
-**Primary Dependencies**: KWin 6 effects API (`QuickSceneEffect`, `EffectsHandler`,
-`EffectWindow`); Qt 6 (Core, Quick/QML, DBus); KDE Frameworks 6 — KConfig, KCoreAddons, KI18n,
-KWindowSystem, KService (app/desktop-file resolution), KGlobalAccel (shortcut), KF6 Kirigami
-(theming). QML imports `org.kde.kwin` (`WindowThumbnail`, `WindowModel`, `ShortcutHandler`) and
-`org.kde.kirigami` (`Kirigami.Theme`).
+**Primary Dependencies**: KWin 5.27 effects API (`QuickSceneEffect` from
+`libkwineffects/kwinquickeffect.h`, `EffectsHandler`, `EffectWindow`, link target `kwineffects`);
+Qt 5 (Core, Gui, Quick/QML, DBus); KDE Frameworks 5 — KConfig, KCoreAddons, KI18n, KWindowSystem,
+KService (app name lookup), **KGlobalAccel** (the shortcut is a `QAction` registered with
+`KGlobalAccel`, since KWin 5.27 has no `EffectsHandler::registerGlobalShortcut`). QML imports
+`org.kde.kwin 3.0` (`WindowThumbnailItem { wId: <internalId QUuid> }`, `WindowModel`,
+`ClientFilterModel`), `org.kde.plasma.core 2.0` (`ColorScope`), `org.kde.plasma.components 3.0`,
+`org.kde.kirigami 2.20`.
 
 **Storage**: Local config only (KConfig/KConfigXT) for the invocation shortcut and optional theme
 override. No persistent data store; window/thumbnail state is transient per session.
 
-**Testing**: QTest (C++ logic, in `autotests/`, `QTEST_GUILESS_MAIN`, run under
+**Testing**: QTest (Qt5 Test, C++ logic, in `autotests/`, `QTEST_GUILESS_MAIN`, run under
 `QT_QPA_PLATFORM=offscreen`); QtQuick Test / `qmltestrunner` (`TestCase`) for QML view logic;
 optional `xvfb-run`/software-GL job for anything exercising real GL. Manual verification on a live
 Plasma session for thumbnail rendering and shortcut behavior.
 
-**Target Platform**: KDE Plasma 6 / KWin 6 on Linux, Wayland **and** X11 sessions. Developed against
-the user's installed stable Plasma 6.x; the exact KWin build version is recorded at build time
-because the KWin effects ABI is not stable across releases.
+**Target Platform**: KDE Plasma 5.27 LTS / KWin 5.27 on Linux (developed on Ubuntu 24.04),
+Wayland **and** X11 sessions. The exact KWin build version is recorded at build time because the
+KWin effects ABI is not stable across releases.
 
 **Project Type**: Desktop system component — an out-of-tree KWin compositor effect plugin (C++
 shared library) plus a QML UI package.
@@ -73,7 +82,7 @@ at a time.
 
 | Principle | Assessment | Status |
 |-----------|------------|--------|
-| **I. KDE & Plasma Conventions** | Uses the supported KWin effects API (`QuickSceneEffect`), KWindowSystem/KService for window→app resolution, KGlobalAccel for the shortcut, Kirigami.Theme for theming, and standard ECM/kpackage install paths. Live thumbnails are compositor-rendered, so Wayland and X11 are both supported through one code path. No scraping or unsupported internals (we implement our own grid rather than depend on KWin's private `WindowHeap`). | ✅ PASS |
+| **I. KDE & Plasma Conventions** | Uses the supported KWin 5.27 effects API (`QuickSceneEffect`), `windowClass()` for window→app grouping (+ KService for display names), KGlobalAccel for the shortcut, `PlasmaCore.ColorScope` for theming, and standard ECM install paths (`kcoreaddons_add_plugin` → `kwin/effects/plugins`). Live thumbnails are compositor-rendered, so Wayland and X11 are both supported through one code path. No scraping or unsupported internals (we implement our own grid rather than depend on KWin's private `WindowHeap`). | ✅ PASS |
 | **II. Performance & Native-First** | The effect runs in-process with the compositor in C++; window enumeration, grouping, ordering, and selection are native. Thumbnails are GPU/compositor-backed (cheap), warmed eagerly on activation for mapped windows. QML is used only for declarative layout/theming, never for hot paths. Budgets (100 ms open, 60 fps) are explicit and will be measured. | ✅ PASS |
 | **III. Test-First (NON-NEGOTIABLE)** | All behavioral logic sits in a pure C++ core (`GroupingEngine`, `SessionController`, `SwitcherModel`) behind a `WindowSource` interface, unit-testable with fake windows and no compositor, headless via the offscreen QPA. Tests are written before implementation (Red-Green-Refactor), enforced in tasks. | ✅ PASS |
 | **IV. Simplicity & UX Clarity** | One purpose (find + activate a window, grouped by app). Zero-config defaults: follows system theme, most-recently-used ordering. Only configuration is the (re-bindable) shortcut and an optional theme override. Single plugin; the interaction model is a small, explicit state machine. C++-only avoids a second toolchain/FFI. | ✅ PASS |

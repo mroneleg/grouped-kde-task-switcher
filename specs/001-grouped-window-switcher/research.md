@@ -7,6 +7,43 @@ research.
 
 ---
 
+## Retarget to Plasma 5.27 (2026-05-31)
+
+The development machine runs **Plasma 5.27 LTS / KWin 5.27.11 (Qt 5, KF5)** on Ubuntu 24.04, not
+Plasma 6. The original research below was written for Plasma 6; the **architecture is unchanged** —
+`QuickSceneEffect` exists in KWin 5.27 — but the following API/version specifics supersede the
+Plasma-6 details in the sections that follow. Verified against the `Plasma/5.27` branch of
+invent.kde.org/plasma/kwin.
+
+| Concern | Plasma 6 (original) | **Plasma 5.27 (actual target)** |
+|---|---|---|
+| Effect base class | `QuickSceneEffect` (`src/effect/quickeffect.h`) | `KWin::QuickSceneEffect` (`libkwineffects/kwinquickeffect.h`); link `kwineffects` |
+| Reference effect | Overview / Window View | **Overview** (`src/effects/overview`, added Plasma 5.24) |
+| Global shortcut | QML `ShortcutHandler` | **`KGlobalAccel::self()->setShortcut(QAction*)`** — no `registerGlobalShortcut` on `EffectsHandler`; link `KF5::GlobalAccel` |
+| Keyboard grab | `grabKeyboard()` | `effects->grabKeyboard(this)` / `ungrabKeyboard()` + override `Effect::grabbedKeyboardEvent()` (`hasKeyboardGrab()` is impl-only, not callable out-of-tree) |
+| Thumbnail QML | `WindowThumbnail { client }` (`org.kde.kwin`) | **`WindowThumbnailItem { wId: <internalId QUuid> }`** via `import org.kde.kwin 3.0`; window model = `WindowModel` + `ClientFilterModel` |
+| App grouping key | `desktopFileName` → KService | **`EffectWindow::windowClass()` (WM_CLASS)** — `desktopFileName()` does NOT exist on 5.27 `EffectWindow`; resolve display name via KService where possible, icon via `EffectWindow::icon()` |
+| Window id (Wayland-safe) | `QUuid` internalId | `EffectWindow::internalId()` (QUuid); `windowId()` is X11-only XID |
+| `EffectWindow` desktops | `desktops()` | `desktops()` → `QVector<uint>` (`int desktop()` is deprecated); `activities()`, `screen()` → `EffectScreen*`, `isMinimized()`, `caption()`, `icon()` |
+| Theming | `Kirigami.Theme` | **`PlasmaCore.ColorScope`** (`org.kde.plasma.core 2.0`) + `PlasmaComponents 3.0` + `Kirigami 2.20`; follows system scheme live (as Overview does) |
+| Toolchain | Qt6 / KF6 / C++23 | **Qt5 / KF5 / C++20** (`CMAKE_CXX_STANDARD 20`); `find_package(Qt5 COMPONENTS Core Gui Quick DBus)`, `find_package(KF5 COMPONENTS Config CoreAddons WindowSystem GlobalAccel I18n Service)`, `find_package(KWin)` → `kwineffects` |
+| Plugin install | `${KDE_INSTALL_PLUGINDIR}/kwin/effects/plugins/` | same, via `kcoreaddons_add_plugin(... INSTALL_NAMESPACE "kwin/effects/plugins")`; QML → `${KDE_INSTALL_DATADIR}/kwin/effects/<id>/qml/` |
+| Plugin factory macro | `KWIN_EFFECT_FACTORY*` | `KWIN_EFFECT_FACTORY_SUPPORTED(...)` in `main.cpp` + `#include "main.moc"` |
+
+**apt packages (Ubuntu 24.04)**: `cmake extra-cmake-modules kwin-dev qtbase5-dev qtdeclarative5-dev
+libkf5config-dev libkf5coreaddons-dev libkf5windowsystem-dev libkf5globalaccel-dev libkf5i18n-dev
+libkf5service-dev kirigami2-dev libkf5configwidgets-dev`.
+
+**Caveat — Plasma 5 is end-of-life** (5.27 is the last Plasma 5 series). The design avoids private
+APIs (no `WindowHeap` dependency) so a future port to Plasma 6 is mostly QML-import + KF5→KF6 +
+`KGlobalAccel`↔`ShortcutHandler` changes; the compositor-free core/model/state-machine port
+unchanged.
+
+The decisions in §§1–9 below remain valid as written **except** where the table above overrides the
+specific class/import/package names.
+
+---
+
 ## 1. Implementation vehicle — how to build the switcher
 
 **Decision**: Build a **C++ `QuickSceneEffect` KWin 6 plugin** (the architecture used by KWin's

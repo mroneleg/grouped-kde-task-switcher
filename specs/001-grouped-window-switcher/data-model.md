@@ -24,7 +24,7 @@ testable.
 | `screen` | screen ref | Monitor the window is on; FR-020 |
 | `isMinimized` | bool | Drives thumbnail-vs-icon fallback; FR-012, research §4 |
 | `lastUsedAt` | monotonic timestamp/rank | MRU ordering of groups and entries; FR-003 |
-| `windowHandle` | opaque pointer (runtime only) | The live KWin window for `WindowThumbnail.client`; **null in tests** |
+| `windowHandle` | opaque id (runtime only) | The window's `internalId()` (QUuid) for `WindowThumbnailItem.wId`; **null/empty in tests** |
 
 **Validation / rules**:
 - `appKey` is never empty: if no desktop file and no class/app_id, assign the shared fallback key
