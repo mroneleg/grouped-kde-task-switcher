@@ -36,8 +36,8 @@ glue), `src/ui` (QML), `autotests/` (C++ QTest), `tests/qml/` (qmltestrunner).
 **Purpose**: Project initialization and build/test scaffolding
 
 - [X] T001 Create the source tree per plan (`src/core/`, `src/model/`, `src/effect/`, `src/ui/`, `src/ui/theme/`, `src/config/`, `autotests/fakes/`, `tests/qml/`) with `.gitkeep` placeholders
-- [ ] T002 Author root `CMakeLists.txt`: `find_package(ECM)`, `Qt5` (Core, Gui, Qml, Quick, DBus, Test), `KF5` (Config, CoreAddons, I18n, WindowSystem, GlobalAccel, Service), `find_package(KWin)` (link `kwineffects`); define a `core` static lib target, the effect plugin target via `kcoreaddons_add_plugin(... INSTALL_NAMESPACE "kwin/effects/plugins")`, and `enable_testing()`; C++20 (`KDECompilerSettings`)
-- [ ] T003 [P] Create the C++ effect plugin metadata in `src/metadata.json` (KPlugin block: Id `groupedswitcher`, Name, Description, Category `Window Management`) embedded via the `KWIN_EFFECT_FACTORY_SUPPORTED` macro in `src/effect/main.cpp`
+- [X] T002 Author root `CMakeLists.txt`: `find_package(ECM)`, `Qt5` (Core, Gui, Qml, Quick, DBus, Test), `KF5` (Config, CoreAddons, I18n, WindowSystem, GlobalAccel, Service), `find_package(KWin)` (link `kwineffects`); define a `core` static lib target, the effect plugin target via `kcoreaddons_add_plugin(... INSTALL_NAMESPACE "kwin/effects/plugins")`, and `enable_testing()`; C++20 (`KDECompilerSettings`)
+- [X] T003 [P] Create the C++ effect plugin metadata in `src/metadata.json` (KPlugin block: Id `groupedswitcher`, Name, Description, Category `Window Management`) embedded via the `KWIN_EFFECT_FACTORY_SUPPORTED` macro in `src/effect/main.cpp`
 - [X] T004 [P] Add `.clang-format` and `.clang-tidy` at repo root matching the KDE/Qt code style (Principle I)
 - [ ] T005 [P] Wire test infrastructure in `autotests/CMakeLists.txt` and `tests/qml/CMakeLists.txt`: `include(ECMAddTests)`, register CTest to run with `QT_QPA_PLATFORM=offscreen` and `LANG=C`, and add a `qmltestrunner -input tests/qml` CTest entry
 
@@ -53,9 +53,9 @@ story builds on
 - [X] T006 [P] Define the `WindowDescriptor` value type in `src/core/WindowDescriptor.h` with all fields from [data-model.md](./data-model.md) (id, appKey, appDisplayName, appIconName, caption, desktop, activity, screen, isMinimized, lastUsedAt, opaque windowHandle) — no KWin/Qt-GUI types
 - [X] T007 [P] Define `WindowId` and the abstract `WindowSource` interface in `src/core/WindowSource.h` (`snapshot()`, `activate()`, `restoreActive()`, `previouslyActive()`, `windowAdded/Removed/Changed` signals) per [contracts/window-source.md](./contracts/window-source.md)
 - [X] T008 [P] Implement the `FakeWindowSource` test double in `autotests/fakes/FakeWindowSource.h` / `.cpp` (scripted descriptor lists, on-demand change-signal emission, recorded `activate()`/`restoreActive()` calls)
-- [ ] T009 Create the `GroupedSwitcherEffect` skeleton in `src/effect/GroupedSwitcherEffect.h` / `.cpp` (+ `src/effect/main.cpp` with `KWIN_EFFECT_FACTORY_SUPPORTED`): subclass `KWin::QuickSceneEffect`, `setSource()` the installed `main.qml`, expose model + controller to QML via `initialProperties()` (stubbed) — depends on T002, T003
-- [ ] T010 Add shortcut + open/close plumbing: register a `QAction` with `KGlobalAccel` in `GroupedSwitcherEffect` to toggle, and `setRunning()` + `effects->grabKeyboard(this)`/`ungrabKeyboard()` + `grabbedKeyboardEvent()` so the bound shortcut shows/hides a blank overlay — depends on T009
-- [ ] T011 [P] Implement the `EffectWindowSource` adapter skeleton in `src/effect/EffectWindowSource.h` / `.cpp`: enumerate `stackingOrder()` **across all virtual desktops, activities, and monitors with no per-desktop/per-activity filtering** (FR-020 scope), filter eligibility only by window type (exclude dock/utility/overlay), map `EffectWindow` → `WindowDescriptor` (capturing each window's desktop/activity/screen), and subscribe to KWin add/remove/changed signals (activation/restore deferred to US1/US3) — depends on T006, T007
+- [X] T009 Create the `GroupedSwitcherEffect` skeleton in `src/effect/GroupedSwitcherEffect.h` / `.cpp` (+ `src/effect/main.cpp` with `KWIN_EFFECT_FACTORY_SUPPORTED`): subclass `KWin::QuickSceneEffect`, `setSource()` the installed `main.qml`, expose model + controller to QML via `initialProperties()` (stubbed) — depends on T002, T003
+- [X] T010 Add shortcut + open/close plumbing: register a `QAction` with `KGlobalAccel` in `GroupedSwitcherEffect` to toggle, and `setRunning()` + `effects->grabKeyboard(this)`/`ungrabKeyboard()` + `grabbedKeyboardEvent()` so the bound shortcut shows/hides a blank overlay — depends on T009
+- [X] T011 [P] Implement the `EffectWindowSource` adapter skeleton in `src/effect/EffectWindowSource.h` / `.cpp`: enumerate `stackingOrder()` **across all virtual desktops, activities, and monitors with no per-desktop/per-activity filtering** (FR-020 scope), filter eligibility only by window type (exclude dock/utility/overlay), map `EffectWindow` → `WindowDescriptor` (capturing each window's desktop/activity/screen), and subscribe to KWin add/remove/changed signals (activation/restore deferred to US1/US3) — depends on T006, T007
 - [X] T012 [P] Define the `SwitcherModel` skeleton (`QAbstractItemModel`) in `src/model/SwitcherModel.h` / `.cpp` with the group and entry role enums from [contracts/switcher-model.md](./contracts/switcher-model.md) (data populated in US1/US2)
 - [X] T013 [P] Define the `SessionController` skeleton in `src/core/SessionController.h` / `.cpp` with the `Level` enum (`Closed`/`Overview`/`InGroup`), intent-method stubs, and `stateChanged`/`closed` signals per [contracts/interaction-state-machine.md](./contracts/interaction-state-machine.md)
 
@@ -86,10 +86,10 @@ with correct logo/count; move the highlight; confirm → the chosen app's window
 - [X] T019 [P] [US1] Implement `GroupingEngine` in `src/core/GroupingEngine.h` / `.cpp` (descriptors → ordered `ApplicationGroup` list, MRU, fallback group, mostRecentWindow) — makes T015 pass
 - [X] T020 [US1] Implement `SessionController` Overview transitions + confirm in `src/core/SessionController.cpp` (open/advance/retreat/move/confirm, empty handling) — depends on T013, T019; makes T016 pass
 - [X] T021 [US1] Implement `SwitcherModel` group level in `src/model/SwitcherModel.cpp` (populate groups from the engine, expose group roles, handle source changes) — depends on T012, T019; makes T017 pass
-- [ ] T022 [US1] Implement window activation in `EffectWindowSource::activate()` in `src/effect/EffectWindowSource.cpp` (`activateWindow`, switch desktop/activity, unminimize) per [contracts/activation.md](./contracts/activation.md) — depends on T011
-- [ ] T023 [P] [US1] Build `src/ui/GroupOverview.qml`: row/list of groups showing app logo + name + count, highlight, keyboard + mouse selection bound to the controller (FR-001/002/004), with placeholder icon for missing logos (FR-002 edge)
-- [ ] T024 [US1] Wire `src/ui/main.qml` to show `GroupOverview` when `level==Overview`, route shortcut/keys/click to `advanceHighlight`/`moveHighlight`/`enterHighlightedGroup`/`confirm`, and show an empty state (FR-019) — depends on T010, T020, T023
-- [ ] T025 [US1] Connect `EffectWindowSource` → `GroupingEngine` → `SessionController`/`SwitcherModel` in `GroupedSwitcherEffect` (build groups on open) — depends on T009, T020, T021, T022
+- [X] T022 [US1] Implement window activation in `EffectWindowSource::activate()` in `src/effect/EffectWindowSource.cpp` (`activateWindow`, switch desktop/activity, unminimize) per [contracts/activation.md](./contracts/activation.md) — depends on T011
+- [X] T023 [P] [US1] Build `src/ui/GroupOverview.qml`: row/list of groups showing app logo + name + count, highlight, keyboard + mouse selection bound to the controller (FR-001/002/004), with placeholder icon for missing logos (FR-002 edge)
+- [X] T024 [US1] Wire `src/ui/main.qml` to show `GroupOverview` when `level==Overview`, route shortcut/keys/click to `advanceHighlight`/`moveHighlight`/`enterHighlightedGroup`/`confirm`, and show an empty state (FR-019) — depends on T010, T020, T023
+- [X] T025 [US1] Connect `EffectWindowSource` → `GroupingEngine` → `SessionController`/`SwitcherModel` in `GroupedSwitcherEffect` (build groups on open) — depends on T009, T020, T021, T022
 
 **Checkpoint**: MVP — invoke → grouped overview with logos/counts → confirm → switch to the app's
 MRU window. Independently demoable.
@@ -113,10 +113,10 @@ appear as aligned-grid thumbnails (scroll if many); select one → it is activat
 ### Implementation for User Story 2
 
 - [X] T029 [US2] Extend `SessionController` with InGroup transitions (enter/back/move-in-grid/confirm-window/scrollOffset) in `src/core/SessionController.cpp` — depends on T020; makes T026 pass
-- [ ] T030 [US2] Extend `SwitcherModel` with per-group window entries + entry roles in `src/model/SwitcherModel.cpp` — depends on T021; makes T027 pass
-- [ ] T031 [P] [US2] Implement `src/ui/WindowTile.qml` (`import org.kde.kwin 3.0`): `WindowThumbnailItem { wId: model.internalId }` with the title/selection ring placed *beside* the thumbnail (not overlaid — research §4), placeholder while `Warming`, app icon on `IconFallback` (FR-011/012)
-- [ ] T032 [US2] Implement `src/ui/ApplicationGroupGrid.qml`: `GridView` with uniform cells + `ScrollBar`, keyboard + mouse selection, scroll-to-keep-selection-visible (FR-006/007) — depends on T031; makes T028 pass
-- [ ] T033 [US2] Wire `src/ui/main.qml` to show the grid when `level==InGroup`, route enter/back/confirm, preserve the overview highlight (FR-005) — depends on T024, T029, T032
+- [X] T030 [US2] Extend `SwitcherModel` with per-group window entries + entry roles in `src/model/SwitcherModel.cpp` — depends on T021; makes T027 pass
+- [X] T031 [P] [US2] Implement `src/ui/WindowTile.qml` (`import org.kde.kwin 3.0`): `WindowThumbnailItem { wId: model.internalId }` with the title/selection ring placed *beside* the thumbnail (not overlaid — research §4), placeholder while `Warming`, app icon on `IconFallback` (FR-011/012)
+- [X] T032 [US2] Implement `src/ui/ApplicationGroupGrid.qml`: `GridView` with uniform cells + `ScrollBar`, keyboard + mouse selection, scroll-to-keep-selection-visible (FR-006/007) — depends on T031; makes T028 pass
+- [X] T033 [US2] Wire `src/ui/main.qml` to show the grid when `level==InGroup`, route enter/back/confirm, preserve the overview highlight (FR-005) — depends on T024, T029, T032
 - [ ] T034 [US2] Implement eager thumbnail warming on open in `GroupedSwitcherEffect`/`EffectWindowSource`: prewarm thumbnails for all mapped windows at activation (not at group-open), minimized → icon fallback (FR-011, SC-003, research §4) — depends on T025, T031
 
 **Checkpoint**: US1 + US2 — drill into a group, scan an aligned grid of live thumbnails (scrolling
@@ -140,9 +140,9 @@ Escape → closes with no switch and prior focus restored.
 
 ### Implementation for User Story 3
 
-- [ ] T036 [US3] Implement the persistent keyboard-grab lifecycle in `src/effect/GroupedSwitcherEffect.cpp`: grab on open, **no** auto-close on modifier release or timeout, ungrab + close only on confirm/cancel (FR-008); enforce a **single-instance guard** so re-invoking the shortcut while open reuses the existing session (advances the highlight) and rapid repeated invocation never stacks overlapping overlays (spec Edge Cases / Assumptions) — depends on T010, T025
-- [ ] T037 [US3] Map shortcut re-press → `advanceHighlight` (wrap) and Escape → `cancel` in `src/ui/main.qml` + controller (FR-009) — depends on T020, T024, T036
-- [ ] T038 [US3] Implement cancel/restore in `src/core/SessionController.cpp` + `EffectWindowSource::restoreActive()` in `src/effect/EffectWindowSource.cpp`: capture `previouslyActive` on open, restore it on cancel (FR-009) — depends on T011, T020; part of T035
+- [X] T036 [US3] Implement the persistent keyboard-grab lifecycle in `src/effect/GroupedSwitcherEffect.cpp`: grab on open, **no** auto-close on modifier release or timeout, ungrab + close only on confirm/cancel (FR-008); enforce a **single-instance guard** so re-invoking the shortcut while open reuses the existing session (advances the highlight) and rapid repeated invocation never stacks overlapping overlays (spec Edge Cases / Assumptions) — depends on T010, T025
+- [X] T037 [US3] Map shortcut re-press → `advanceHighlight` (wrap) and Escape → `cancel` in `src/ui/main.qml` + controller (FR-009) — depends on T020, T024, T036
+- [X] T038 [US3] Implement cancel/restore in `src/core/SessionController.cpp` + `EffectWindowSource::restoreActive()` in `src/effect/EffectWindowSource.cpp`: capture `previouslyActive` on open, restore it on cancel (FR-009) — depends on T011, T020; part of T035
 - [X] T039 [US3] Implement live-update handling in `SwitcherModel`/`SessionController`: react to `windowAdded/Removed/Changed`, clamp selection, close-on-empty (FR-018/019) — depends on T021, T029, T030; part of T035
 
 **Checkpoint**: Overlay persists after key release; re-press cycles; Escape restores; live
@@ -165,7 +165,7 @@ logos/labels/thumbnails legible in both.
 ### Implementation for User Story 4
 
 - [ ] T041 [P] [US4] Create theme helpers in `src/ui/theme/` built on `PlasmaCore.ColorScope` + `PlasmaComponents 3.0` (with `Kirigami 2.20` where useful), follow-system by default with an optional override (FR-014) — makes T040 pass
-- [ ] T042 [US4] Apply modern styling across `src/ui/GroupOverview.qml`, `src/ui/ApplicationGroupGrid.qml`, `src/ui/WindowTile.qml`, `src/ui/main.qml` (spacing, rounded selection, contrast in light/dark) (FR-015) — depends on T041, T023, T032
+- [X] T042 [US4] Apply modern styling across `src/ui/GroupOverview.qml`, `src/ui/ApplicationGroupGrid.qml`, `src/ui/WindowTile.qml`, `src/ui/main.qml` (spacing, rounded selection, contrast in light/dark) (FR-015) — depends on T041, T023, T032
 - [ ] T043 [P] [US4] Add KConfigXT config in `src/config/main.xml` (+ config UI) for the invocation shortcut and theme override, loaded by `GroupedSwitcherEffect` (FR-014/016)
 
 **Checkpoint**: Overlay matches the system light/dark scheme with a modern look; shortcut/theme are

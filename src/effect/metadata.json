@@ -8,7 +8,6 @@
         "License": "GPL-2.0+"
     },
     "org.kde.kwin.effect": {
-        "exclusiveGroup": "tabbox",
-        "video": ""
+        "internal": false
     }
 }

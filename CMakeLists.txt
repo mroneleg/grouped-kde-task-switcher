@@ -15,14 +15,20 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt5 5.15 REQUIRED COMPONENTS Core Test)
+find_package(Qt5 5.15 REQUIRED COMPONENTS Core Gui Quick Test)
+find_package(KF5 REQUIRED COMPONENTS CoreAddons Config I18n Service WindowSystem GlobalAccel)
 
-# The compositor-free core + Qt model layer (unit-testable; no KWin).
+# The KWin 5.27 effect library (KWinEffects::kwineffects). Optional so the
+# compositor-free core + tests still build where KWin headers are absent.
+find_package(KWinEffects QUIET)
+if(KWinEffects_FOUND)
+    # KWinEffects' link interface references XCB::XCB / epoxy targets.
+    find_package(XCB COMPONENTS XCB)
+    find_package(epoxy)
+endif()
+
+# The compositor-free behavioral core + Qt model layer (testable; no KWin).
 add_subdirectory(src)
 
 enable_testing()
 add_subdirectory(autotests)
-
-# NOTE: the KWin-coupled effect (src/effect) and QML overlay (src/ui) are added
-# in a later increment — they require KWin/Qt5 Quick and a live compositor to
-# validate, so they are intentionally not part of this headless-testable build.
