@@ -55,7 +55,7 @@ story builds on
 - [ ] T008 [P] Implement the `FakeWindowSource` test double in `autotests/fakes/FakeWindowSource.h` / `.cpp` (scripted descriptor lists, on-demand change-signal emission, recorded `activate()`/`restoreActive()` calls)
 - [ ] T009 Create the `GroupedSwitcherEffect` skeleton in `src/effect/GroupedSwitcherEffect.h` / `.cpp`: subclass `QuickSceneEffect`, register with `KWIN_EFFECT_FACTORY*`, load `src/ui/main.qml` as the per-screen delegate, expose model + controller as QML context properties (stubbed) — depends on T002, T003
 - [ ] T010 Add shortcut + open/close plumbing: a `ShortcutHandler` in `src/ui/main.qml` and `setRunning()`/`grabKeyboard()`/`ungrabKeyboard()` wiring in `GroupedSwitcherEffect` so the bound shortcut shows/hides a blank overlay — depends on T009
-- [ ] T011 [P] Implement the `EffectWindowSource` adapter skeleton in `src/effect/EffectWindowSource.h` / `.cpp`: enumerate `stackingOrder()`, filter eligibility (exclude dock/utility/overlay), map `EffectWindow` → `WindowDescriptor`, and subscribe to KWin add/remove/changed signals (activation/restore deferred to US1/US3) — depends on T006, T007
+- [ ] T011 [P] Implement the `EffectWindowSource` adapter skeleton in `src/effect/EffectWindowSource.h` / `.cpp`: enumerate `stackingOrder()` **across all virtual desktops, activities, and monitors with no per-desktop/per-activity filtering** (FR-020 scope), filter eligibility only by window type (exclude dock/utility/overlay), map `EffectWindow` → `WindowDescriptor` (capturing each window's desktop/activity/screen), and subscribe to KWin add/remove/changed signals (activation/restore deferred to US1/US3) — depends on T006, T007
 - [ ] T012 [P] Define the `SwitcherModel` skeleton (`QAbstractItemModel`) in `src/model/SwitcherModel.h` / `.cpp` with the group and entry role enums from [contracts/switcher-model.md](./contracts/switcher-model.md) (data populated in US1/US2)
 - [ ] T013 [P] Define the `SessionController` skeleton in `src/core/SessionController.h` / `.cpp` with the `Level` enum (`Closed`/`Overview`/`InGroup`), intent-method stubs, and `stateChanged`/`closed` signals per [contracts/interaction-state-machine.md](./contracts/interaction-state-machine.md)
 
@@ -78,6 +78,7 @@ with correct logo/count; move the highlight; confirm → the chosen app's window
 - [ ] T015 [P] [US1] `GroupingEngineTest` in `autotests/GroupingEngineTest.cpp`: one group per app, MRU group ordering, default highlight = previous app, single-window group, fallback group (FR-001/002/003/017)
 - [ ] T016 [P] [US1] `SessionControllerTest` (overview subset) in `autotests/SessionControllerTest.cpp`: open with N apps → Overview + group count; advance/retreat/move highlight (FR-004); confirm group → `FakeWindowSource.activate(MRU window)` (FR-010); open with 0 windows → empty then Closed (FR-019)
 - [ ] T017 [P] [US1] `SwitcherModelTest` (group roles) in `autotests/SwitcherModelTest.cpp`: group roles (appDisplayName/appIconName/windowCount/isFallback), MRU order, reset on source change
+- [ ] T050 [P] [US1] Window-scope test in `autotests/GroupingEngineTest.cpp`: given `FakeWindowSource` descriptors spanning multiple virtual desktops, activities, and monitors, **all** windows appear in the grouped result with no per-desktop/activity filtering (FR-020 scope) — *added by analysis remediation (C1)*
 
 ### Implementation for User Story 1
 
@@ -135,10 +136,11 @@ Escape → closes with no switch and prior focus restored.
 ### Tests for User Story 3 (write first; must fail) ⚠️
 
 - [ ] T035 [P] [US3] `SessionController` lifecycle tests in `autotests/SessionControllerTest.cpp`: re-press `advanceHighlight` wraps and never closes (FR-008/009); `cancel` restores previously-active and activates nothing (FR-009); `windowRemoved` clamps selection and remove-last → empty/Closed; `windowAdded` inserts a group without losing the highlight target (FR-018/019)
+- [ ] T051 [P] [US3] Single-instance / re-invocation test in `autotests/SessionControllerTest.cpp`: calling `open()` while already in `Overview`/`InGroup` reuses the one session (advances highlight) instead of creating a second; rapid repeated `open()` leaves exactly one consistent session (spec Edge Cases / Assumptions) — *added by analysis remediation (C2)*
 
 ### Implementation for User Story 3
 
-- [ ] T036 [US3] Implement the persistent keyboard-grab lifecycle in `src/effect/GroupedSwitcherEffect.cpp`: grab on open, **no** auto-close on modifier release or timeout, ungrab + close only on confirm/cancel (FR-008) — depends on T010, T025
+- [ ] T036 [US3] Implement the persistent keyboard-grab lifecycle in `src/effect/GroupedSwitcherEffect.cpp`: grab on open, **no** auto-close on modifier release or timeout, ungrab + close only on confirm/cancel (FR-008); enforce a **single-instance guard** so re-invoking the shortcut while open reuses the existing session (advances the highlight) and rapid repeated invocation never stacks overlapping overlays (spec Edge Cases / Assumptions) — depends on T010, T025
 - [ ] T037 [US3] Map shortcut re-press → `advanceHighlight` (wrap) and Escape → `cancel` in `src/ui/main.qml` + controller (FR-009) — depends on T020, T024, T036
 - [ ] T038 [US3] Implement cancel/restore in `src/core/SessionController.cpp` + `EffectWindowSource::restoreActive()` in `src/effect/EffectWindowSource.cpp`: capture `previouslyActive` on open, restore it on cancel (FR-009) — depends on T011, T020; part of T035
 - [ ] T039 [US3] Implement live-update handling in `SwitcherModel`/`SessionController`: react to `windowAdded/Removed/Changed`, clamp selection, close-on-empty (FR-018/019) — depends on T021, T029, T030; part of T035
@@ -262,3 +264,7 @@ Task: "SwitcherModelTest (group roles) in autotests/SwitcherModelTest.cpp"
   `src/effect` (Principle II, and minimizes KWin-ABI blast radius)
 - Auto-commit is enabled — each Spec Kit step commits; commit after each task or logical group too
 - Stop at any checkpoint to validate a story independently
+- **Analysis remediation**: T050 (US1, FR-020 window-scope test) and T051 (US3, single-instance/
+  re-invocation test) were added after `/speckit-analyze` to close coverage gaps C1 and C2; T011 and
+  T036 were extended accordingly. These two IDs are out of numeric sequence by design (appended so
+  existing T001–T049 and their issues keep their numbers). Total tasks: **51**.
