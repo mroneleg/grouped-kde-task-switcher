@@ -35,10 +35,10 @@ glue), `src/ui` (QML), `autotests/` (C++ QTest), `tests/qml/` (qmltestrunner).
 
 **Purpose**: Project initialization and build/test scaffolding
 
-- [ ] T001 Create the source tree per plan (`src/core/`, `src/model/`, `src/effect/`, `src/ui/`, `src/ui/theme/`, `src/config/`, `autotests/fakes/`, `tests/qml/`) with `.gitkeep` placeholders
+- [X] T001 Create the source tree per plan (`src/core/`, `src/model/`, `src/effect/`, `src/ui/`, `src/ui/theme/`, `src/config/`, `autotests/fakes/`, `tests/qml/`) with `.gitkeep` placeholders
 - [ ] T002 Author root `CMakeLists.txt`: `find_package(ECM)`, `Qt5` (Core, Gui, Qml, Quick, DBus, Test), `KF5` (Config, CoreAddons, I18n, WindowSystem, GlobalAccel, Service), `find_package(KWin)` (link `kwineffects`); define a `core` static lib target, the effect plugin target via `kcoreaddons_add_plugin(... INSTALL_NAMESPACE "kwin/effects/plugins")`, and `enable_testing()`; C++20 (`KDECompilerSettings`)
 - [ ] T003 [P] Create the C++ effect plugin metadata in `src/metadata.json` (KPlugin block: Id `groupedswitcher`, Name, Description, Category `Window Management`) embedded via the `KWIN_EFFECT_FACTORY_SUPPORTED` macro in `src/effect/main.cpp`
-- [ ] T004 [P] Add `.clang-format` and `.clang-tidy` at repo root matching the KDE/Qt code style (Principle I)
+- [X] T004 [P] Add `.clang-format` and `.clang-tidy` at repo root matching the KDE/Qt code style (Principle I)
 - [ ] T005 [P] Wire test infrastructure in `autotests/CMakeLists.txt` and `tests/qml/CMakeLists.txt`: `include(ECMAddTests)`, register CTest to run with `QT_QPA_PLATFORM=offscreen` and `LANG=C`, and add a `qmltestrunner -input tests/qml` CTest entry
 
 ---
@@ -50,14 +50,14 @@ story builds on
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T006 [P] Define the `WindowDescriptor` value type in `src/core/WindowDescriptor.h` with all fields from [data-model.md](./data-model.md) (id, appKey, appDisplayName, appIconName, caption, desktop, activity, screen, isMinimized, lastUsedAt, opaque windowHandle) — no KWin/Qt-GUI types
-- [ ] T007 [P] Define `WindowId` and the abstract `WindowSource` interface in `src/core/WindowSource.h` (`snapshot()`, `activate()`, `restoreActive()`, `previouslyActive()`, `windowAdded/Removed/Changed` signals) per [contracts/window-source.md](./contracts/window-source.md)
-- [ ] T008 [P] Implement the `FakeWindowSource` test double in `autotests/fakes/FakeWindowSource.h` / `.cpp` (scripted descriptor lists, on-demand change-signal emission, recorded `activate()`/`restoreActive()` calls)
+- [X] T006 [P] Define the `WindowDescriptor` value type in `src/core/WindowDescriptor.h` with all fields from [data-model.md](./data-model.md) (id, appKey, appDisplayName, appIconName, caption, desktop, activity, screen, isMinimized, lastUsedAt, opaque windowHandle) — no KWin/Qt-GUI types
+- [X] T007 [P] Define `WindowId` and the abstract `WindowSource` interface in `src/core/WindowSource.h` (`snapshot()`, `activate()`, `restoreActive()`, `previouslyActive()`, `windowAdded/Removed/Changed` signals) per [contracts/window-source.md](./contracts/window-source.md)
+- [X] T008 [P] Implement the `FakeWindowSource` test double in `autotests/fakes/FakeWindowSource.h` / `.cpp` (scripted descriptor lists, on-demand change-signal emission, recorded `activate()`/`restoreActive()` calls)
 - [ ] T009 Create the `GroupedSwitcherEffect` skeleton in `src/effect/GroupedSwitcherEffect.h` / `.cpp` (+ `src/effect/main.cpp` with `KWIN_EFFECT_FACTORY_SUPPORTED`): subclass `KWin::QuickSceneEffect`, `setSource()` the installed `main.qml`, expose model + controller to QML via `initialProperties()` (stubbed) — depends on T002, T003
 - [ ] T010 Add shortcut + open/close plumbing: register a `QAction` with `KGlobalAccel` in `GroupedSwitcherEffect` to toggle, and `setRunning()` + `effects->grabKeyboard(this)`/`ungrabKeyboard()` + `grabbedKeyboardEvent()` so the bound shortcut shows/hides a blank overlay — depends on T009
 - [ ] T011 [P] Implement the `EffectWindowSource` adapter skeleton in `src/effect/EffectWindowSource.h` / `.cpp`: enumerate `stackingOrder()` **across all virtual desktops, activities, and monitors with no per-desktop/per-activity filtering** (FR-020 scope), filter eligibility only by window type (exclude dock/utility/overlay), map `EffectWindow` → `WindowDescriptor` (capturing each window's desktop/activity/screen), and subscribe to KWin add/remove/changed signals (activation/restore deferred to US1/US3) — depends on T006, T007
-- [ ] T012 [P] Define the `SwitcherModel` skeleton (`QAbstractItemModel`) in `src/model/SwitcherModel.h` / `.cpp` with the group and entry role enums from [contracts/switcher-model.md](./contracts/switcher-model.md) (data populated in US1/US2)
-- [ ] T013 [P] Define the `SessionController` skeleton in `src/core/SessionController.h` / `.cpp` with the `Level` enum (`Closed`/`Overview`/`InGroup`), intent-method stubs, and `stateChanged`/`closed` signals per [contracts/interaction-state-machine.md](./contracts/interaction-state-machine.md)
+- [X] T012 [P] Define the `SwitcherModel` skeleton (`QAbstractItemModel`) in `src/model/SwitcherModel.h` / `.cpp` with the group and entry role enums from [contracts/switcher-model.md](./contracts/switcher-model.md) (data populated in US1/US2)
+- [X] T013 [P] Define the `SessionController` skeleton in `src/core/SessionController.h` / `.cpp` with the `Level` enum (`Closed`/`Overview`/`InGroup`), intent-method stubs, and `stateChanged`/`closed` signals per [contracts/interaction-state-machine.md](./contracts/interaction-state-machine.md)
 
 **Checkpoint**: Shortcut opens a blank overlay; the testable seam and model/controller skeletons
 exist — user stories can now proceed.
@@ -74,18 +74,18 @@ with correct logo/count; move the highlight; confirm → the chosen app's window
 
 ### Tests for User Story 1 (write first; must fail) ⚠️
 
-- [ ] T014 [P] [US1] `ApplicationResolverTest` in `autotests/ApplicationResolverTest.cpp`: appKey/name/icon resolution via desktop file, `WM_CLASS`/`app_id` fallback, and the `__unidentified__` fallback key (FR-001/002/017)
-- [ ] T015 [P] [US1] `GroupingEngineTest` in `autotests/GroupingEngineTest.cpp`: one group per app, MRU group ordering, default highlight = previous app, single-window group, fallback group (FR-001/002/003/017)
-- [ ] T016 [P] [US1] `SessionControllerTest` (overview subset) in `autotests/SessionControllerTest.cpp`: open with N apps → Overview + group count; advance/retreat/move highlight (FR-004); confirm group → `FakeWindowSource.activate(MRU window)` (FR-010); open with 0 windows → empty then Closed (FR-019)
-- [ ] T017 [P] [US1] `SwitcherModelTest` (group roles) in `autotests/SwitcherModelTest.cpp`: group roles (appDisplayName/appIconName/windowCount/isFallback), MRU order, reset on source change
-- [ ] T050 [P] [US1] Window-scope test in `autotests/GroupingEngineTest.cpp`: given `FakeWindowSource` descriptors spanning multiple virtual desktops, activities, and monitors, **all** windows appear in the grouped result with no per-desktop/activity filtering (FR-020 scope) — *added by analysis remediation (C1)*
+- [X] T014 [P] [US1] `ApplicationResolverTest` in `autotests/ApplicationResolverTest.cpp`: appKey/name/icon resolution via desktop file, `WM_CLASS`/`app_id` fallback, and the `__unidentified__` fallback key (FR-001/002/017)
+- [X] T015 [P] [US1] `GroupingEngineTest` in `autotests/GroupingEngineTest.cpp`: one group per app, MRU group ordering, default highlight = previous app, single-window group, fallback group (FR-001/002/003/017)
+- [X] T016 [P] [US1] `SessionControllerTest` (overview subset) in `autotests/SessionControllerTest.cpp`: open with N apps → Overview + group count; advance/retreat/move highlight (FR-004); confirm group → `FakeWindowSource.activate(MRU window)` (FR-010); open with 0 windows → empty then Closed (FR-019)
+- [X] T017 [P] [US1] `SwitcherModelTest` (group roles) in `autotests/SwitcherModelTest.cpp`: group roles (appDisplayName/appIconName/windowCount/isFallback), MRU order, reset on source change
+- [X] T050 [P] [US1] Window-scope test in `autotests/GroupingEngineTest.cpp`: given `FakeWindowSource` descriptors spanning multiple virtual desktops, activities, and monitors, **all** windows appear in the grouped result with no per-desktop/activity filtering (FR-020 scope) — *added by analysis remediation (C1)*
 
 ### Implementation for User Story 1
 
-- [ ] T018 [P] [US1] Implement `ApplicationResolver` in `src/core/ApplicationResolver.h` / `.cpp` (group key = `windowClass()` WM_CLASS; resolve display name via KService where possible, else the class string; icon comes from `EffectWindow::icon()` with a placeholder fallback; `__unidentified__` key when class is empty) — makes T014 pass
-- [ ] T019 [P] [US1] Implement `GroupingEngine` in `src/core/GroupingEngine.h` / `.cpp` (descriptors → ordered `ApplicationGroup` list, MRU, fallback group, mostRecentWindow) — makes T015 pass
-- [ ] T020 [US1] Implement `SessionController` Overview transitions + confirm in `src/core/SessionController.cpp` (open/advance/retreat/move/confirm, empty handling) — depends on T013, T019; makes T016 pass
-- [ ] T021 [US1] Implement `SwitcherModel` group level in `src/model/SwitcherModel.cpp` (populate groups from the engine, expose group roles, handle source changes) — depends on T012, T019; makes T017 pass
+- [X] T018 [P] [US1] Implement `ApplicationResolver` in `src/core/ApplicationResolver.h` / `.cpp` (group key = `windowClass()` WM_CLASS; resolve display name via KService where possible, else the class string; icon comes from `EffectWindow::icon()` with a placeholder fallback; `__unidentified__` key when class is empty) — makes T014 pass
+- [X] T019 [P] [US1] Implement `GroupingEngine` in `src/core/GroupingEngine.h` / `.cpp` (descriptors → ordered `ApplicationGroup` list, MRU, fallback group, mostRecentWindow) — makes T015 pass
+- [X] T020 [US1] Implement `SessionController` Overview transitions + confirm in `src/core/SessionController.cpp` (open/advance/retreat/move/confirm, empty handling) — depends on T013, T019; makes T016 pass
+- [X] T021 [US1] Implement `SwitcherModel` group level in `src/model/SwitcherModel.cpp` (populate groups from the engine, expose group roles, handle source changes) — depends on T012, T019; makes T017 pass
 - [ ] T022 [US1] Implement window activation in `EffectWindowSource::activate()` in `src/effect/EffectWindowSource.cpp` (`activateWindow`, switch desktop/activity, unminimize) per [contracts/activation.md](./contracts/activation.md) — depends on T011
 - [ ] T023 [P] [US1] Build `src/ui/GroupOverview.qml`: row/list of groups showing app logo + name + count, highlight, keyboard + mouse selection bound to the controller (FR-001/002/004), with placeholder icon for missing logos (FR-002 edge)
 - [ ] T024 [US1] Wire `src/ui/main.qml` to show `GroupOverview` when `level==Overview`, route shortcut/keys/click to `advanceHighlight`/`moveHighlight`/`enterHighlightedGroup`/`confirm`, and show an empty state (FR-019) — depends on T010, T020, T023
@@ -106,13 +106,13 @@ appear as aligned-grid thumbnails (scroll if many); select one → it is activat
 
 ### Tests for User Story 2 (write first; must fail) ⚠️
 
-- [ ] T026 [P] [US2] `SessionController` in-group tests in `autotests/SessionControllerTest.cpp`: `enterHighlightedGroup` → InGroup with the group's windows; move within grid; `back` → Overview with origin group still highlighted; confirm window → `activate(window)` (FR-005/006/010)
+- [X] T026 [P] [US2] `SessionController` in-group tests in `autotests/SessionControllerTest.cpp`: `enterHighlightedGroup` → InGroup with the group's windows; move within grid; `back` → Overview with origin group still highlighted; confirm window → `activate(window)` (FR-005/006/010)
 - [ ] T027 [P] [US2] `SwitcherModel` entry-role tests in `autotests/SwitcherModelTest.cpp`: entry roles (caption/windowHandle/thumbnailState/appIconName), MRU window order, entries reflect the open group
 - [ ] T028 [P] [US2] `tests/qml/tst_groupgrid.qml` (qmltestrunner): grid cells are uniform (equal cellWidth/cellHeight, no overlap) and scrolling makes every entry reachable (FR-006/007)
 
 ### Implementation for User Story 2
 
-- [ ] T029 [US2] Extend `SessionController` with InGroup transitions (enter/back/move-in-grid/confirm-window/scrollOffset) in `src/core/SessionController.cpp` — depends on T020; makes T026 pass
+- [X] T029 [US2] Extend `SessionController` with InGroup transitions (enter/back/move-in-grid/confirm-window/scrollOffset) in `src/core/SessionController.cpp` — depends on T020; makes T026 pass
 - [ ] T030 [US2] Extend `SwitcherModel` with per-group window entries + entry roles in `src/model/SwitcherModel.cpp` — depends on T021; makes T027 pass
 - [ ] T031 [P] [US2] Implement `src/ui/WindowTile.qml` (`import org.kde.kwin 3.0`): `WindowThumbnailItem { wId: model.internalId }` with the title/selection ring placed *beside* the thumbnail (not overlaid — research §4), placeholder while `Warming`, app icon on `IconFallback` (FR-011/012)
 - [ ] T032 [US2] Implement `src/ui/ApplicationGroupGrid.qml`: `GridView` with uniform cells + `ScrollBar`, keyboard + mouse selection, scroll-to-keep-selection-visible (FR-006/007) — depends on T031; makes T028 pass
@@ -135,15 +135,15 @@ Escape → closes with no switch and prior focus restored.
 
 ### Tests for User Story 3 (write first; must fail) ⚠️
 
-- [ ] T035 [P] [US3] `SessionController` lifecycle tests in `autotests/SessionControllerTest.cpp`: re-press `advanceHighlight` wraps and never closes (FR-008/009); `cancel` restores previously-active and activates nothing (FR-009); `windowRemoved` clamps selection and remove-last → empty/Closed; `windowAdded` inserts a group without losing the highlight target (FR-018/019)
-- [ ] T051 [P] [US3] Single-instance / re-invocation test in `autotests/SessionControllerTest.cpp`: calling `open()` while already in `Overview`/`InGroup` reuses the one session (advances highlight) instead of creating a second; rapid repeated `open()` leaves exactly one consistent session (spec Edge Cases / Assumptions) — *added by analysis remediation (C2)*
+- [X] T035 [P] [US3] `SessionController` lifecycle tests in `autotests/SessionControllerTest.cpp`: re-press `advanceHighlight` wraps and never closes (FR-008/009); `cancel` restores previously-active and activates nothing (FR-009); `windowRemoved` clamps selection and remove-last → empty/Closed; `windowAdded` inserts a group without losing the highlight target (FR-018/019)
+- [X] T051 [P] [US3] Single-instance / re-invocation test in `autotests/SessionControllerTest.cpp`: calling `open()` while already in `Overview`/`InGroup` reuses the one session (advances highlight) instead of creating a second; rapid repeated `open()` leaves exactly one consistent session (spec Edge Cases / Assumptions) — *added by analysis remediation (C2)*
 
 ### Implementation for User Story 3
 
 - [ ] T036 [US3] Implement the persistent keyboard-grab lifecycle in `src/effect/GroupedSwitcherEffect.cpp`: grab on open, **no** auto-close on modifier release or timeout, ungrab + close only on confirm/cancel (FR-008); enforce a **single-instance guard** so re-invoking the shortcut while open reuses the existing session (advances the highlight) and rapid repeated invocation never stacks overlapping overlays (spec Edge Cases / Assumptions) — depends on T010, T025
 - [ ] T037 [US3] Map shortcut re-press → `advanceHighlight` (wrap) and Escape → `cancel` in `src/ui/main.qml` + controller (FR-009) — depends on T020, T024, T036
 - [ ] T038 [US3] Implement cancel/restore in `src/core/SessionController.cpp` + `EffectWindowSource::restoreActive()` in `src/effect/EffectWindowSource.cpp`: capture `previouslyActive` on open, restore it on cancel (FR-009) — depends on T011, T020; part of T035
-- [ ] T039 [US3] Implement live-update handling in `SwitcherModel`/`SessionController`: react to `windowAdded/Removed/Changed`, clamp selection, close-on-empty (FR-018/019) — depends on T021, T029, T030; part of T035
+- [X] T039 [US3] Implement live-update handling in `SwitcherModel`/`SessionController`: react to `windowAdded/Removed/Changed`, clamp selection, close-on-empty (FR-018/019) — depends on T021, T029, T030; part of T035
 
 **Checkpoint**: Overlay persists after key release; re-press cycles; Escape restores; live
 open/close of windows updates the view.

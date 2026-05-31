@@ -1,0 +1,22 @@
+# KDE Frameworks / Qt code style (clang-format).
+---
+BasedOnStyle: WebKit
+Standard: c++20
+ColumnLimit: 100
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+NamespaceIndentation: None
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterClass: true
+  AfterFunction: true
+  AfterNamespace: false
+  AfterControlStatement: false
+  AfterEnum: false
+  AfterStruct: true
+AllowShortFunctionsOnASingleLine: Inline
+AlwaysBreakTemplateDeclarations: Yes
+PointerAlignment: Right
+SortIncludes: true
+SpaceAfterCStyleCast: true

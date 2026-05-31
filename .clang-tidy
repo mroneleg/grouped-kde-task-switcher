@@ -1,0 +1,14 @@
+# KDE-leaning clang-tidy checks for the C++ sources.
+---
+Checks: >
+  -*,
+  bugprone-*,
+  modernize-use-nullptr,
+  modernize-use-override,
+  modernize-use-using,
+  readability-redundant-member-init,
+  readability-redundant-string-init,
+  performance-*,
+  -bugprone-easily-swappable-parameters
+WarningsAsErrors: ''
+HeaderFilterRegex: '.*/src/.*'

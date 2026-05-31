@@ -1,0 +1,18 @@
+# Build
+build/
+bin/
+obj/
+out/
+*.o
+*.so
+*.a
+*.moc
+moc_*.cpp
+*_autogen/
+# Editors
+.idea/
+*.swp
+.DS_Store
+# Logs/env
+*.log
+.env*

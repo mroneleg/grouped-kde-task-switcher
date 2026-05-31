@@ -1,0 +1,14 @@
+{
+    "KPlugin": {
+        "Id": "groupedswitcher",
+        "Name": "Grouped Window Switcher",
+        "Description": "Task switcher that groups windows by application with a thumbnail grid",
+        "Category": "Window Management",
+        "EnabledByDefault": false,
+        "License": "GPL-2.0+"
+    },
+    "org.kde.kwin.effect": {
+        "exclusiveGroup": "tabbox",
+        "video": ""
+    }
+}
