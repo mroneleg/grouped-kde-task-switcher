@@ -57,7 +57,7 @@ Item {
                         }
                         PC3.Label {
                             Layout.alignment: Qt.AlignHCenter
-                            text: i18np("%1 window", "%1 windows", model.windowCount)
+                            text: model.windowCount + (model.windowCount === 1 ? " window" : " windows")
                             opacity: 0.7
                             font: Kirigami.Theme.smallFont
                         }
