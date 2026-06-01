@@ -19,3 +19,7 @@ ecm_add_test(SessionControllerTest.cpp
 ecm_add_test(SwitcherModelTest.cpp
     TEST_NAME SwitcherModelTest
     LINK_LIBRARIES gks_core gks_testfakes Qt5::Test)
+
+ecm_add_test(WindowEntryModelTest.cpp
+    TEST_NAME WindowEntryModelTest
+    LINK_LIBRARIES gks_core gks_testfakes Qt5::Test)

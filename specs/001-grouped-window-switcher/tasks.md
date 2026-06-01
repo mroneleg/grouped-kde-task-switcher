@@ -107,7 +107,7 @@ appear as aligned-grid thumbnails (scroll if many); select one → it is activat
 ### Tests for User Story 2 (write first; must fail) ⚠️
 
 - [X] T026 [P] [US2] `SessionController` in-group tests in `autotests/SessionControllerTest.cpp`: `enterHighlightedGroup` → InGroup with the group's windows; move within grid; `back` → Overview with origin group still highlighted; confirm window → `activate(window)` (FR-005/006/010)
-- [ ] T027 [P] [US2] `SwitcherModel` entry-role tests in `autotests/SwitcherModelTest.cpp`: entry roles (caption/windowHandle/thumbnailState/appIconName), MRU window order, entries reflect the open group
+- [X] T027 [P] [US2] `SwitcherModel` entry-role tests in `autotests/SwitcherModelTest.cpp`: entry roles (caption/windowHandle/thumbnailState/appIconName), MRU window order, entries reflect the open group
 - [ ] T028 [P] [US2] `tests/qml/tst_groupgrid.qml` (qmltestrunner): grid cells are uniform (equal cellWidth/cellHeight, no overlap) and scrolling makes every entry reachable (FR-006/007)
 
 ### Implementation for User Story 2
@@ -180,7 +180,7 @@ configurable.
 - [ ] T044 [P] Add a performance measurement harness and record results for open latency (<100 ms p95, SC-001) and 60 fps cycling/scroll with ≥50 windows / ≥10 groups (SC-002, Principle II) — in `autotests/` (benchmark) + manual notes
 - [ ] T045 [P] Instrument/measure that ≥90% of thumbnails are `Ready` by group-open (SC-003)
 - [ ] T046 [P] Accessibility pass: keyboard-only operation, screen-reader labels on tiles/groups, reduced-motion respect across `src/ui/` (Principle IV, spec accessibility)
-- [ ] T047 [P] Documentation: add repo `README.md` (build/install/enable) and reconcile any deltas in [quickstart.md](./quickstart.md); note the KWin-version ABI coupling (research §9)
+- [X] T047 [P] Documentation: add repo `README.md` (build/install/enable) and reconcile any deltas in [quickstart.md](./quickstart.md); note the KWin-version ABI coupling (research §9)
 - [ ] T048 Finalize CMake install rules (effect plugin → `${KDE_INSTALL_PLUGINDIR}/kwin/effects/plugins/`, QML/config packaged) in `CMakeLists.txt`
 - [ ] T049 Run [quickstart.md](./quickstart.md) manual validation end-to-end on **both** Wayland and X11 sessions (FR-008/010/011/014, all SCs; Principle I dual-session requirement)
 

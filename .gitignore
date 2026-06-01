@@ -16,3 +16,4 @@ moc_*.cpp
 # Logs/env
 *.log
 .env*
+.gks-overview-preview.png
