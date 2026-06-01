@@ -15,7 +15,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt5 5.15 REQUIRED COMPONENTS Core Gui Quick Test)
+find_package(Qt5 5.15 REQUIRED COMPONENTS Core Gui Quick DBus Test)
 find_package(KF5 REQUIRED COMPONENTS CoreAddons Config I18n Service WindowSystem GlobalAccel)
 
 # The KWin 5.27 effect library (KWinEffects::kwineffects). Optional so the

@@ -51,25 +51,25 @@ set -u
 CFG="$1"; LOG="$2"; APPSCMD="$3"
 export XDG_CONFIG_HOME="$CFG"
 
-# Enable our effect in the isolated config + give it a shortcut for in-window use.
+# Force SOFTWARE compositing — this environment's nested EGL/OpenGL init fails,
+# and KWin refuses to run without compositing. QPainter avoids EGL entirely.
+# (Thumbnails may show the app icon instead of a live preview in software mode;
+# grouping/navigation/overlay still render.)
+export KWIN_COMPOSE=Q
+
+# Enable our effect in the isolated config + software backend.
 kwriteconfig5 --file kwinrc --group Plugins --key groupedswitcherEnabled true >>"$LOG" 2>&1
-kwriteconfig5 --file kglobalshortcutsrc --group kwin --key GroupedWindowSwitcher \
-    "Meta+Tab,Meta+Tab,Toggle Grouped Window Switcher" >>"$LOG" 2>&1
+kwriteconfig5 --file kwinrc --group Compositing --key Backend QPainter >>"$LOG" 2>&1
+kwriteconfig5 --file kwinrc --group Compositing --key Enabled true >>"$LOG" 2>&1
 
-# KGlobalAccel daemon so the effect's QAction shortcut registers and is invokable.
-if   command -v kglobalacceld6 >/dev/null; then kglobalacceld6 >>"$LOG" 2>&1 &
-elif command -v kglobalaccel5  >/dev/null; then kglobalaccel5  >>"$LOG" 2>&1 &
-elif command -v kglobalacceld  >/dev/null; then kglobalacceld  >>"$LOG" 2>&1 & fi
-sleep 1
-
-echo "== launching nested kwin_wayland ==" >>"$LOG"
+echo "== launching nested kwin_wayland (software compositing) ==" >>"$LOG"
 kwin_wayland --xwayland --width 1600 --height 900 -- bash -c "$APPSCMD" >>"$LOG" 2>&1 &
 KW=$!
 
 sleep 6
-echo "== auto-invoking GroupedWindowSwitcher ==" >>"$LOG"
-qdbus org.kde.kglobalaccel /component/kwin invokeShortcut GroupedWindowSwitcher >>"$LOG" 2>&1 \
-    || echo "(invokeShortcut failed; press Meta+Tab inside the nested window instead)" >>"$LOG"
+echo "== auto-invoking via D-Bus toggle ==" >>"$LOG"
+qdbus org.kde.KWin /GroupedWindowSwitcher toggle >>"$LOG" 2>&1 \
+    || echo "(D-Bus toggle failed — see log; effect may not have loaded)" >>"$LOG"
 
 echo "Nested KWin running (pid $KW). Click into the window; Tab/arrows navigate,"
 echo "Enter activates, Escape closes. Ctrl+C here to stop."

@@ -27,8 +27,13 @@ public:
 protected:
     QVariantMap initialProperties(KWin::EffectScreen *screen) override;
 
+public Q_SLOTS:
+    /// Open/advance the switcher. Exposed on D-Bus (org.kde.KWin
+    /// /GroupedWindowSwitcher) for testing/automation, in addition to the
+    /// KGlobalAccel shortcut.
+    Q_SCRIPTABLE void toggle();
+
 private Q_SLOTS:
-    void toggle();
     void onControllerClosed();
 
 private:

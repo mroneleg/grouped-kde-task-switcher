@@ -11,6 +11,7 @@
 #include <KLocalizedString>
 
 #include <QAction>
+#include <QDBusConnection>
 #include <QStandardPaths>
 #include <QUrl>
 
@@ -34,6 +35,12 @@ GroupedSwitcherEffect::GroupedSwitcherEffect()
     KGlobalAccel::self()->setDefaultShortcut(m_toggleAction, {def});
     KGlobalAccel::self()->setShortcut(m_toggleAction, {def});
     connect(m_toggleAction, &QAction::triggered, this, &GroupedSwitcherEffect::toggle);
+
+    // Also expose the toggle on D-Bus (org.kde.KWin /GroupedWindowSwitcher) so it
+    // can be driven without KGlobalAccel (testing, nested dev harness).
+    QDBusConnection::sessionBus().registerObject(
+        QStringLiteral("/GroupedWindowSwitcher"), this,
+        QDBusConnection::ExportScriptableSlots);
 
     const QString qml = QStandardPaths::locate(
         QStandardPaths::GenericDataLocation,

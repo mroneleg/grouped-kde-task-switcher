@@ -28,6 +28,7 @@ if(TARGET KWinEffects::kwineffects)
         KWinEffects::kwineffects
         Qt5::Quick
         Qt5::Gui
+        Qt5::DBus
         KF5::GlobalAccel
         KF5::Service
         KF5::I18n
